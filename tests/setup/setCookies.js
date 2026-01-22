@@ -9,4 +9,8 @@ test('Set cookies', async ({ page }) => {
     // await page.waitForTimeout(5000);
     await page.waitForLoadState('load');
     await page.context().storageState({ path: cookiesFile });
+
+    // Ждем, чтобы куки успели записаться в браузер
+//   await page.waitForLoadState('networkidle');
+
 })

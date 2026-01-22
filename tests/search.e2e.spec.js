@@ -1,59 +1,51 @@
 import { test, expect } from '@playwright/test';
-import { HomePage } from '../pages/HomePage';
-import { XPATH } from '..//helper/locators.js';
+import { SearchResultsPage } from '../pages/SearchResultsPage';
+import {SEARCHTERM, NOSEARCH} from '../utils/testData'
 
 test.describe('Search E2E', () => {
 
     test.beforeEach(async ({ page }) => {
-        await page.goto('https://www.21vek.by/');
-        await page.locator('//div[@class="AgreementCookie_buttons__zhpxj"]/button[2]').click();
+        await page.goto('/');
     });
 
-    test('TC-7 Search valid product', async ({ page }) => {
-        const home = new HomePage(page);
+    test('TC-8 Search valid product', async ({ page }) => {
+        const searchPage = new SearchResultsPage(page);
 
-        await home.open();
-        await home.search('телевизор');
+        await searchPage.search(SEARCHTERM);
 
-        const products = page.locator(`xpath=${XPATH.search.productCard}`);
-        await expect(products.first()).toBeVisible();
+        const products = await searchPage.productCard;
+        await expect(products).toBeVisible();
     });
 
     test('TC-8 Search suggestions visible', async ({ page }) => {
-        await page.goto('/');
-        await page.locator(`xpath=${XPATH.search.input}`).fill('тел');
+        const searchPage = new SearchResultsPage(page);
+        await searchPage.fillSearch(SEARCHTERM);
 
-        await expect(
-            page.locator(`xpath=${XPATH.search.searchResultsContainer}`)
-        ).toBeVisible({ timeout: 5000 });
+        await expect(searchPage.searchSuggestionsContainer).toBeVisible({ timeout: 5000 });
     });
 
     test('TC-9 Search invalid product', async ({ page }) => {
-        const home = new HomePage(page);
+        const searchPage = new SearchResultsPage(page);
+        await searchPage.search(NOSEARCH);
 
-        await home.open();
-        await home.search('asdasdasd');
-
-        await expect(
-        page.locator("//text()[contains(.,'Ничего не найдено')]")
-        ).toBeVisible();
+        await expect(searchPage.noSearch).toBeVisible();
     });
 
     test('TC-10 Search by Enter key', async ({ page }) => {
-        await page.goto('/');
-        await page.locator(`xpath=${XPATH.search.input}`).fill('ноутбук');
-        await page.keyboard.press('Enter');
+        const searchPage = new SearchResultsPage(page);
+        await searchPage.fillSearch(SEARCHTERM);
+        await searchPage.searchInput.press('Enter');
+        // await searchPage.page.keyboard.press('Enter');
 
-        await expect(page).toHaveURL("https://www.21vek.by/search/");
+        const products = await searchPage.productCard;
+        await expect(products).toBeVisible();
     });
 
     test('TC-11 Clear search input', async ({ page }) => {
-        const input = page.locator(`xpath=${XPATH.search.input}`);
+       const searchPage = new SearchResultsPage(page);
 
-        await page.goto('/');
-        await input.fill('телевизор');
-        await input.fill('');
-
-        await expect(input).toHaveValue('');
+        await searchPage.search(SEARCHTERM);
+        await searchPage.clearSearchField.click();
+        await expect(searchPage.searchInput).toHaveValue('');
     });
 });

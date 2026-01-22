@@ -1,23 +1,44 @@
 // pages/SearchResultsPage.js
 import { BasePage } from './BasePage';
-import { XPATH } from '../locators/locators.xpath';
 
 export class SearchResultsPage extends BasePage {
-  constructor(page) {
-    super(page);
-    this.productCards = XPATH.search.productCard;
-    this.firstProductCard = XPATH.search.firstProductCard;
+
+  get searchInput() {
+    return this.page.locator(`//div[contains(@class,'Search_searchInputContainer')]/input`)
+  }
+  
+  get searchSubmitButton() {
+    return this.page.locator(`//button[@class='Search_searchBtn__Tk7Gw']`)
   }
 
-  async openBySearchTerm(term) {
-    await this.open(`/search/?term=${encodeURIComponent(term)}`);
+  get searchSuggestionsContainer() {
+    return this.page.locator(`//div[@class='SearchResults_content__lRYQw']`)
   }
 
-  async openFirstProduct() {
-    await this.click(this.firstProductCard);
+  get firstProductCard() {
+    return this.page.locator(`(//div[@class='style_product__xVGB6 style_startFlex__Agzf4'])[1]`)
   }
 
-  async getProductsCount() {
-    return await this.page.locator(`xpath=${this.productCards}`).count();
+  get productCard() {
+    return this.page.locator(`//div[@data-testid='search-result-product-list']`)
+  }
+
+  get noSearch() {
+    return this.page.locator(`//div[@class="NoSearchData_text__wkdr_"]`)
+  }
+
+  get clearSearchField() {
+    return this.page.locator(`//button[@class="Search_clearBtn__j9c8N"]`)
+  }
+
+  async fillSearch(text) {
+    await this.searchInput.isVisible()
+    await this.searchInput.fill(text);
+  }
+
+  async search(text) {
+    await this.fillSearch(text);
+    await this.searchSubmitButton.isVisible();
+    await this.searchSubmitButton.click();
   }
 }

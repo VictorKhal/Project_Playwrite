@@ -1,87 +1,86 @@
 import { test, expect } from '@playwright/test';
 import { AuthPage } from "../pages/AuthPage";
-import { XPATH } from "../helper/locators";
-import { CREDENTIALS } from '../utils/testData';
+import { CREDENTIALS, NOT_REGISTERED_CREDENTIAL, INVALID_CREDENTIAL_EMAIL, INVALID_PHONE, INVALID_CREDENTIAL_PHONE} from '../utils/testData';
 
-test.describe('Authorization', () => {    
+test.describe('Authorization', () => {
+ 
     test.beforeEach(async ({ page }) => {
-        await page.goto('https://www.21vek.by/');
-        await page.locator('//div[@class="AgreementCookie_buttons__zhpxj"]/button[2]').click();
+        await page.goto('/');
     });
 
-    
     test('TC-1 Open auth modal', async ({ page }) => {
         const authPage = new AuthPage(page);
-        await authPage.open();
         await authPage.openAuthModal();
         
-        await expect(
-            page.locator(`xpath=${XPATH.auth.modal}`)
-        ).toBeVisible();
+        await expect(authPage.authModal).toBeVisible();
     });
 
     test('TC-2 Login invalid credentials', async ({ page }) => {
         const authPage = new AuthPage(page);
-        await authPage.open();
-        await authPage.openAuthModal();
 
-        await page.locator(`xpath=${XPATH.auth.emailInput}`).fill(CREDENTIALS.wrongCredentials.login);
-        await page.locator(`xpath=${XPATH.auth.passwordInput}`).fill(CREDENTIALS.wrongCredentials.password);
-        await page.locator(`xpath=${XPATH.auth.submitButton}`).click();
+        await authPage.logIn(
+            CREDENTIALS.wrongCredentials.login,
+            CREDENTIALS.wrongCredentials.password
+        );
 
-        await expect(
-            page.locator(`xpath=${XPATH.auth.wrongEmailMessage}`)
-        ).toBeVisible();
+        await expect(await authPage.errorMessage).toHaveText(INVALID_CREDENTIAL_EMAIL);
     });
 
     test('TC-3 Login valid credentials', async ({ page }) => {
         const authPage = new AuthPage(page);
-        await authPage.open();
-        await authPage.openAuthModal();
 
-        await page.locator(`xpath=${XPATH.auth.emailInput}`).fill(CREDENTIALS.validCredentials.login);
-        await page.locator(`xpath=${XPATH.auth.passwordInput}`).fill(CREDENTIALS.validCredentials.password);
-        await page.locator(`xpath=${XPATH.auth.submitButton}`).click();
-        await page.locator(`xpath=${XPATH.header.accountButton}`).click();
+        await authPage.logIn(
+            CREDENTIALS.validCredentials.login,
+            CREDENTIALS.validCredentials.password
+        );
 
-        await expect(
-            page.locator(`xpath=${XPATH.auth.successLogin}`)
-        ).toBeVisible();
+        await authPage.accountButton.click();
+        
+        await expect(authPage.authSuccessLogin).toBeVisible();
     });
 
-    test('TC-4 Open registration', async ({ page }) => {
+    test('TC-4 Login not registered credentials', async ({ page }) => {
         const authPage = new AuthPage(page);
-        await authPage.open();
-        await authPage.openAuthModal();
 
-        await page.locator(`xpath=${XPATH.auth.registerLink}`).click();
+        await authPage.logIn(
+            CREDENTIALS.notRegisteredCredentials.login,
+            CREDENTIALS.notRegisteredCredentials.password
+        );
 
-        await expect(
-            page.locator(`xpath=${XPATH.auth.registerForm}`)
-        ).toBeVisible();
+        await expect(await authPage.errorMessage).toHaveText(NOT_REGISTERED_CREDENTIAL);
     });
 
-    test('TC-5 Forgot password', async ({ page }) => {
+    test('TC-5 Login with invalid phone number', async ({page}) => {
         const authPage = new AuthPage(page);
-        await authPage.open();
-        await authPage.openAuthModal();
 
-        await page.locator(`xpath=${XPATH.auth.forgotPasswordLink}`).click();
+        await authPage.loginWithPhone(INVALID_PHONE);
+        await expect(await authPage.errorMessage).toHaveText(INVALID_CREDENTIAL_PHONE)
+    })
 
-        await expect(
-            page.locator(`xpath=${XPATH.auth.resetPasswordForm}`)
-        ).toBeVisible();
+    test('TC-5 Open registration', async ({ page }) => {
+        const authPage = new AuthPage(page);
+
+        await authPage.openRegistration();
+
+        await expect(authPage.authRegisterForm).toBeVisible()
     });
 
-    test('TC-6 Close auth modal', async ({ page }) => {
+    test('TC-6 Forgot password', async ({ page }) => {
         const authPage = new AuthPage(page);
-        await authPage.open();
+
+        await authPage.openForgotPassword();
+
+        await expect(authPage.authResetPasswordForm).toBeVisible();
+    });
+
+    test('TC-7 Close auth modal', async ({ page }) => {
+        const authPage = new AuthPage(page);
         await authPage.openAuthModal();
 
-        await page.locator(`xpath=${XPATH.popups.closePopupButton}`).click();
+        // await page.locator(`xpath=${XPATH.popups.closePopupButton}`).click();
 
-        await expect(
-            page.locator(`xpath=${XPATH.auth.modal}`)
-        ).not.toBeVisible();
+        await authPage.authCloseLoginWindow.click();
+
+        await expect(authPage.authModal).not.toBeVisible();
     });
 });

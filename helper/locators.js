@@ -36,8 +36,7 @@ export const XPATH = {
     firstProductCard: "(//div[@class='style_product__xVGB6 style_startFlex__Agzf4'])[1]",
 
     productCard: "//div[@data-testid='search-result-product-list']",
-
-    // productCard: "//div[@class='SearchResults_content__lRYQw']",
+    searchButton: "//button[@class='Search_searchBtn__Tk7Gw']",
 },
 
   catalog: {

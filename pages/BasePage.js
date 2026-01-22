@@ -3,21 +3,23 @@ export class BasePage {
     this.page = page;
   }
 
+  get cartButton () {
+      return this.page.locator(`.headerCartBox`);
+  }
+
+  get logo() {
+      return this.page.locator(`//a[@class="logotypeImg"]`);
+  }
+
+  get favoritesLink() {
+    return this.page.locator(`//a[contains(@href,'/aside')]`)
+  }
+
+  get favoritesLinkCount() {
+    return this.page.locator(`//div[contains(@data-testid,'header-favorites-count')]/span`)
+  }
+
   async open(path = '/') {
     await this.page.goto(path, { waitUntil: 'domcontentloaded' });
-  }
-
-  locator(xpath) {
-    return this.page.locator(`xpath=${xpath}`);
-  }
-
-  async click(xpath) {
-    await this.locator(xpath).waitFor({ state: 'visible' });
-    await this.locator(xpath).click();
-  }
-
-  async fill(xpath, value) {
-    await this.locator(xpath).waitFor({ state: 'visible' });
-    await this.locator(xpath).fill(value);
   }
 }
